@@ -13,7 +13,7 @@ Session(app)
 
 @app.route('/')
 def index():
-    # If no auth token, then return the re-direct URL
+    # TODO: If no auth token, then return the re-direct URL
     if not session.get("user"):
         return generate_redirect()
     return jsonify({"code": "AUTHORIZED", "message": "You are authorized"}), 200
