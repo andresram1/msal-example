@@ -1,6 +1,6 @@
 import uuid
-import requests
-from flask import Flask, render_template, session, request, redirect, url_for, jsonify
+
+from flask import Flask, session, request, redirect, url_for, jsonify, make_response
 from flask_session import Session  # https://pythonhosted.org/Flask-Session
 import msal
 import app_config
@@ -24,13 +24,19 @@ def generate_redirect():
     # Technically we could use empty list [] as scopes to do just sign in,
     # here we choose to also collect end user consent upfront
     auth_url = _build_auth_url(scopes=app_config.SCOPE, state=session["state"])
-    return jsonify({"code": "REDIRECT", "message": auth_url}), 200
+
+    resp1 = jsonify({"code": "REDIRECT", "message": auth_url})
+
+    resp = make_response(resp1, 200)
+    resp.headers['my-header'] = 'hello-world-header'
+
+    return resp
 
 
 @app.route(app_config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
 def authorized():
     # TODO: Review and check the first condition about the state
-    #if request.args.get('state') != session.get("state"):
+    # if request.args.get('state') != session.get("state"):
     #    return jsonify({"code": "UNAUTHORIZED", "message": "You are unauthorized"}), 200
     if "error" in request.args:  # Authentication/Authorization failure
         return jsonify({"code": "AUTHORIZATION_FAILURE", "message": "Authentication/Authorization failure"}), 200
